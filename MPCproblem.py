@@ -51,9 +51,13 @@ class MPCproblem(object):
         self.u_con = self.prob.addControls(n,umin,umax,ustart=None,method=['PiecewiseConstant',10])
         self.nu = n        
         return self.u_con
-    def addControllerODEs(self,diff,rhs,colsel=None):
+    def addControllerODEs(self,diff,u,rhs,colsel=None):
         self.rhs_con = rhs
-        self.prob.addOde(self.x_con,self.rhs_con)        
+        if self.dis is not 'MultipleShooting':
+            self.prob.addOde(self.x_con,self.rhs_con)
+        else:
+            self.prob.addOde(self.x_con,self.u_con,self.rhs_con)
+            
     def addControllerConstraints(self,c,cmin,cmax1=None):
         self.prob.addConstraints(c,cmin,cmax=cmax1)
     def addControlObjective(self,f):

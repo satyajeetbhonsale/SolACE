@@ -82,18 +82,37 @@ class caller(SX):
         self.pas = pas
         self.f = SXFunction(self.pas.obj,[self])
         self.f.init()
+    def ff(self,member,i):
+        print type(member)
+        print member
+        if member.shape[1] > 1:
+            return member[:,i]
+        else:
+            return member
     def __call__(self,j=None,num=False):
         if j == 0:
             nn = self.f.getNumInputs()
+            print nn
             ns = self.shape[0]
-            x = MX.zeros(0)
             for i in range(nn):
-                x.append(self.p[0+i*ns])
-        elif j == 'control':
-            x = MX.zeros(0)
-            np = self.np
+                x = self.pas.obj[i].evalAtStart()
+            if num:
+                xp = self.pas.obj[i].getPVals()
+                x = xp.reshape((xp.shape[0]/self.pas.obj[i].shape[0],self.pas.obj[i].shape[0]))[0,:].T
+        if j == 'control':
+            nn = self.f.getNumInputs()
             ns = self.shape[0]
-            for i in range(ns):
-                x.append(self.p[i:np:ns])
+            for i in range(nn):
+                x = self.pas.obj[i].evalAtControls()
+            if num:
+                xp = self.pas.obj[i].getPVals()
+                x = xp.reshape((xp.shape[0]/self.pas.obj[i].shape[0],self.pas.obj[i].shape[0])).T
+        if j < 0:
+            nn = self.f.getNumInputs()
+            for i in range(nn):
+                x = self.pas.obj[i].evalAtEnd()             
+            if num:
+                xp = self.pas.obj[i].getPVals()
+                x = xp.reshape((xp.shape[0]/self.pas.obj[i].shape[0],self.pas.obj[i].shape[0]))[-1,:].T
         return x
-TypeWrapper(caller,SX)
+#TypeWrapper(caller,SX)
